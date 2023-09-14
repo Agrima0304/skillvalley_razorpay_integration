@@ -1,0 +1,75 @@
+<h1>Welcome to SkillValley</h1>
+<img src="https://skillvalley.in/wp-content/uploads/2023/01/Logo-1-1536x1288.png" width="100px" height="100px">
+<p>Please Pay the Amount</p>
+
+<button id="rzp-button1">Pay with Razorpay</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+var orderId;
+
+$(document).ready(function () {
+    var settings = {
+        "url": "/create/orderId",
+        "method": "POST",
+        "timeout": 0,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "data": JSON.stringify({
+            "amount": "50000"
+        }),
+    };
+
+    document.getElementById('rzp-button1').onclick = function (e) {
+        // Create a new orderId every time
+        $.ajax(settings).done(function (response) {
+            orderId = response.id; // Use 'id' instead of 'orderId'
+            console.log(orderId);
+            $("button").show();
+
+            var options = {
+                "key": "rzp_test_7PDslyoH9nIRj0", // Enter the Key ID generated from the Dashboard
+                "amount": "100", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                "currency": "INR",
+                "name": "Skill Valley",
+                "description": "Cohort fees to pay",
+                "image": "https://example.com/your_logo",
+                "order_id": orderId,
+                "handler": function (response) {
+                    alert(response.razorpay_payment_id);
+                    alert(response.razorpay_order_id);
+                    alert(response.razorpay_signature);
+                    var settings = {
+                    "url": "/api/payment/verify",
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                    "Content-Type": "application/json"
+  },
+  "data": JSON.stringify({response}),
+}
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response) {
+                alert(response.error.code);
+                alert(response.error.description);
+                alert(response.error.source);
+                alert(response.error.step);
+                alert(response.error.reason);
+                alert(response.error.metadata.order_id);
+                alert(response.error.metadata.payment_id);
+            });
+
+            rzp1.open();
+        });
+
+        e.preventDefault();
+    };
+});
+</script>
